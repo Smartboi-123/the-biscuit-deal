@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Biscuit Deal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crete+Round&family=Pacifico&display=swap');
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-image: url('gamedev image.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center center;
+            color: #5a3c2b;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .game-container {
+            margin: 20px;
+            width: 700px;
+            padding: 30px;
+            border: 5px solid #a0522d;
+            border-radius: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 0px 25px rgba(255, 165, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            animation: container-glow 3s infinite alternate ease-in-out;
+        }
+
+        h1 {
+            font-family: 'Crete Round', serif;
+            color: #7b3f00;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 5px rgba(0,0,0,0.2);
+            animation: title-bounce 2s infinite ease-in-out;
+        }
+
+        .output {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px dashed #d2b48c;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: left;
+            background-color: #fefcf5;
+            border-radius: 8px;
+            line-height: 1.6;
+            font-size: 1.1em;
+            box-shadow: inset 1px 1px 5px rgba(0,0,0,0.1);
+        }
+
+        .output p {
+            margin: 5px 0;
+        }
+
+        #player-status {
+            margin-bottom: 25px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #6a3e1f;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #player-status div {
+            padding: 5px 10px;
+            background-color: #f0e6d2;
+            border-radius: 5px;
+            margin: 5px;
+            min-width: 250px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        #player-status .player-info span {
+            display: inline-block;
+            transition: transform 0.2s ease-out;
+        }
+
+        .score-update-flash {
+            animation: score-flash 0.5s ease-out;
+            color: #4CAF50;
+            font-size: 1.1em;
+            transform: scale(1.1);
+        }
+
+        .stash-update-flash {
+            animation: score-flash 0.5s ease-out;
+            color: #ff9800;
+            font-size: 1.1em;
+            transform: scale(1.1);
+        }
+
+        button {
+            padding: 12px 25px;
+            margin: 8px;
+            cursor: pointer;
+            background-color: #a0522d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
+        }
+
+        button:hover:enabled {
+            background-color: #8b4513;
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+        }
+
+        button:active:enabled {
+            transform: translateY(0);
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            color: #999999;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        #startBtn {
+            background-color: #4CAF50;
+            font-size: 1.6em;
+            padding: 18px 35px;
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #startBtn:hover:enabled {
+            background-color: #45a049;
+            transform: translateY(-4px) scale(1.05) translateX(-50%);
+        }
+
+        #rulesBtn {
+            background-color: #2196F3;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        #rulesBtn:hover {
+            background-color: #1976D2;
+        }
+        
+        #rulesBox {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 80%;
+            max-width: 350px;
+            background-color: #fff8e1;
+            border: 4px solid #8b4513;
+            border-radius: 15px;
+            padding: 25px;
+            z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            display: none;
+        }
+        
+        #rulesBox.visible {
+            display: block;
+        }
+        
+        #rulesBox h2 {
+            font-family: 'Crete Round', serif;
+            color: #7b3f00;
+            margin-top: 0;
+        }
+        
+        #rulesBox p {
+            text-align: left;
+            margin: 10px 0;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+        .close-btn:hover {
+            background: #b71c1c;
+        }
+
+        /* Updated Pop-up Styles */
+        .popup-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #d32f2f;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            opacity: 0;
+            animation: fadein-center 0.5s forwards, fadeout-center 0.5s 3s forwards;
+        }
+
+        /* Keyframes for centered pop-up */
+        @keyframes fadein-center {
+            from { opacity: 0; transform: translate(-50%, -70%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        @keyframes fadeout-center {
+            from { opacity: 1; transform: translate(-50%, -50%); }
+            to { opacity: 0; transform: translate(-50%, -30%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>The Biscuit Deal</h1>
+        <div id="output" class="output"></div>
+        <div id="player-status"></div>
+
+        <div id="controls">
+            <button id="eatBtn">Eat Biscuits</button>
+            <button id="keepBtn">Keep in Stash</button>
+            <button id="stealBtn">Steal</button>
+        </div>
+
+    </div>
+
+    <button id="startBtn">Start Game</button>
+    <button id="rulesBtn">Rules</button>
+
+    <div id="rulesBox">
+        <button class="close-btn" id="closeRulesBtn">&times;</button>
+        <h2>The Biscuit Deal: Rules</h2>
+        <p><strong>Objective:</strong> Be the first player to reach a score of <strong>27 points</strong> to win the game.</p>
+        <p><strong>Game Flow:</strong> The game is played in rounds. In each round, both you and the Computer get a new set of biscuits. You each choose an action, and then the round ends.</p>
+        <h3>Your Actions:</h3>
+        <ul>
+            <li><strong>Eat Biscuits:</strong> The safe option. You take all the biscuits in your stash and add them to your score (1 point per biscuit). Your stash becomes zero.</li>
+            <li><strong>Keep in Stash:</strong> The risky option. You keep all the biscuits in your stash. They are worth 3 points each at the end of the game, but can be stolen.</li>
+            <li><strong>Steal:</strong> You try to take half of the opponent's biscuits from their stash. If their stash is empty, you get nothing.</li>
+        </ul>
+        <h3>Bluffing & Strategy:</h3>
+        <p>The key to winning is understanding the bluff. When a player chooses to <strong>Keep in Stash</strong>, they are taking a risk. Use this to your advantage:</p>
+        <ul>
+            <li>If you have a small stash and "Keep," you are bluffing to make the opponent think you have more.</li>
+            <li>If the opponent keeps a large stash, they are vulnerable! This is the perfect time for you to <strong>Steal</strong>.</li>
+        </ul>
+    </div>
+    <script>
+        // Get all HTML elements
+        const outputEl = document.getElementById('output');
+        const statusEl = document.getElementById('player-status');
+        const eatBtn = document.getElementById('eatBtn');
+        const keepBtn = document.getElementById('keepBtn');
+        const stealBtn = document.getElementById('stealBtn');
+        const startBtn = document.getElementById('startBtn');
+        const rulesBtn = document.getElementById('rulesBtn');
+        const rulesBox = document.getElementById('rulesBox');
+        const closeRulesBtn = document.getElementById('closeRulesBtn');
+        const controlsDiv = document.getElementById('controls');
+        const gameContainer = document.querySelector('.game-container');
+
+        // Game state variables
+        let player1 = {};
+        let player2 = {};
+        let currentPlayer;
+        let round = 0;
+        let biscuitsOnTable = 0;
+        const WINNING_SCORE = 27;
+
+        // Function to update the player status display
+        function updateStatus(animatedPlayer = null, type = null) {
+            statusEl.innerHTML = `
+                <p><strong>Round: ${round}</strong></p>
+                <p>${player1.name}: Biscuits in Stash: <span id="p1-stash">${player1.stash}</span>, Score: <span id="p1-score">${player1.score}</span></p>
+                <p>${player2.name}: Biscuits in Stash: ?, Score: ${player2.score}</p>
+                <p>Biscuits added this round: <strong>${biscuitsOnTable}</strong></p>
+                <p>Current Turn: <strong>${currentPlayer.name}</strong></p>
+            `;
+
+            if (animatedPlayer) {
+                if (animatedPlayer === player1) {
+                    if (type === 'score') document.getElementById('p1-score').classList.add('score-update-flash');
+                    if (type === 'stash') document.getElementById('p1-stash').classList.add('stash-update-flash');
+                } else if (animatedPlayer === player2) {
+                    // No animation for hidden stats
+                }
+            }
+        }
+
+        // Disable all action buttons
+        function disableButtons() {
+            eatBtn.disabled = true;
+            keepBtn.disabled = true;
+            stealBtn.disabled = true;
+        }
+
+        // Enable all action buttons
+        function enableButtons() {
+            eatBtn.disabled = false;
+            keepBtn.disabled = false;
+            stealBtn.disabled = false;
+        }
+
+        function animateBiscuits(amount) {
+            const animationEl = document.createElement('div');
+            animationEl.classList.add('biscuit-animation');
+            animationEl.textContent = `+${amount} Biscuits!`;
+            gameContainer.appendChild(animationEl);
+
+            animationEl.addEventListener('animationend', () => {
+                animationEl.remove();
+            });
+        }
+
+        function startNewRound() {
+            round++;
+            biscuitsOnTable = Math.floor(Math.random() * 4) + 1;
+            
+            animateBiscuits(biscuitsOnTable);
+
+            player1.stash += biscuitsOnTable;
+            player2.stash += biscuitsOnTable;
+
+            outputEl.innerHTML += `<p>--- Round ${round} ---</p>`;
+            outputEl.innerHTML += `<p>Each player gets <strong>${biscuitsOnTable}</strong> biscuits on the table this round!</p>`;
+            outputEl.innerHTML += `<p>It's ${currentPlayer.name}'s turn. Choose an action.</p>`;
+            outputEl.scrollTop = outputEl.scrollHeight;
+            updateStatus();
+            enableButtons();
+
+            if (currentPlayer === player2) {
+                disableButtons();
+                setTimeout(computerTurn, 2000);
+            }
+        }
+
+        function computerTurn() {
+            const player1Score = player1.score;
+            const player2Stash = player2.stash;
+            const player2Score = player2.score;
+            const choice = Math.random();
+            
+            let action;
+
+            if (player2Stash >= 5 && choice < 0.8) {
+                action = 'eat';
+            } else if (player1Score > player2Score + 5 && choice < 0.7) {
+                action = 'steal';
+            } else if (player2Stash < 2 && choice < 0.6) {
+                action = 'keep';
+            } else {
+                if (Math.random() < 0.5) {
+                    action = 'eat';
+                } else {
+                    action = 'keep';
+                }
+            }
+            
+            outputEl.innerHTML += `<p>${player2.name} is making a choice...</p>`;
+            setTimeout(() => {
+                if (action === 'steal') {
+                    const stolenAmount = Math.floor(player1.stash / 2);
+                    if (stolenAmount > 0) {
+                        player2.stash += stolenAmount;
+                        player1.stash -= stolenAmount;
+                        updateStatus(player2, 'stash');
+                        showPopup("You got stolen!");
+                    }
+                }
+                
+                outputEl.innerHTML += `<p>${player2.name} has made a move.</p>`;
+                outputEl.scrollTop = outputEl.scrollHeight;
+
+                if (action === 'eat') {
+                    player2.score += player2.stash;
+                    player2.stash = 0;
+                    updateStatus(player2, 'score');
+                } else if (action === 'keep') {
+                    updateStatus();
+                } 
+                
+                endTurn();
+            }, 1000);
+        }
+
+        function showPopup(message) {
+            const popup = document.createElement('div');
+            popup.classList.add('popup-message');
+            popup.textContent = message;
+            document.body.appendChild(popup);
+
+            setTimeout(() => {
+                popup.remove();
+            }, 3500); // Popup disappears after 3.5 seconds
+        }
+
+        function endTurn() {
+            if (player1.score >= WINNING_SCORE) {
+                winPage();
+                return;
+            }
+            if (player2.score >= WINNING_SCORE) {
+                outputEl.innerHTML += `<p class="game-over-flash">Game Over! <strong>${player2.name} wins</strong> with ${player2.score} points!</p>`;
+                disableButtons();
+                return;
+            }
+            
+            currentPlayer = (currentPlayer === player1) ? player2 : player1;
+            
+            if (currentPlayer === player1) {
+                startNewRound();
+            } else {
+                outputEl.innerHTML += `<p>It's now ${currentPlayer.name}'s turn.</p>`;
+                outputEl.scrollTop = outputEl.scrollHeight;
+                updateStatus();
+                disableButtons();
+                setTimeout(computerTurn, 2000);
+            }
+        }
+
+        function winPage() {
+            disableButtons();
+            startBtn.style.display = 'none';
+            rulesBtn.style.display = 'none';
+            controlsDiv.style.display = 'none';
+            statusEl.style.display = 'none';
+
+            outputEl.innerHTML = `
+                <h2 style="font-size: 2.5em; color: #4CAF50; animation: win-flash 2s infinite;">CONGRATULATIONS!</h2>
+                <p style="font-size: 1.5em; font-weight: bold;">You have outsmarted the AI and won The Biscuit Deal!</p>
+                <p style="font-size: 1.2em;">Final Score: ${player1.score} to ${player2.score}</p>
+                <button onclick="window.location.reload()" style="margin-top: 20px;">Play Again?</button>
+            `;
+
+            const style = document.createElement('style');
+            style.innerHTML = `@keyframes win-flash {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }`;
+            document.head.appendChild(style);
+        }
+
+        eatBtn.onclick = function() {
+            const currentStash = currentPlayer.stash;
+            outputEl.innerHTML += `<p>${currentPlayer.name} **eats** their ${currentStash} biscuits, gaining ${currentStash} points.</p>`;
+            currentPlayer.score += currentStash;
+            currentPlayer.stash = 0;
+            outputEl.scrollTop = outputEl.scrollHeight;
+            updateStatus(currentPlayer, 'score');
+            endTurn();
+        };
+
+        keepBtn.onclick = function() {
+            outputEl.innerHTML += `<p>${currentPlayer.name} **keeps** their biscuits in their stash, hoping for more points later.</p>`;
+            outputEl.scrollTop = outputEl.scrollHeight;
+            updateStatus();
+            endTurn();
+        };
+
+        stealBtn.onclick = function() {
+            const targetPlayer = (currentPlayer === player1) ? player2 : player1;
+            const stolenAmount = Math.floor(targetPlayer.stash / 2);
+            
+            if (stolenAmount > 0) {
+                outputEl.innerHTML += `<p>${currentPlayer.name} **attempts to steal**! They successfully take <strong>${stolenAmount} biscuits</strong> from ${targetPlayer.name}!</p>`;
+                currentPlayer.stash += stolenAmount;
+                targetPlayer.stash -= stolenAmount;
+                outputEl.scrollTop = outputEl.scrollHeight;
+                updateStatus(currentPlayer, 'stash');
+                showPopup("Your theft was successful!");
+            } else {
+                outputEl.innerHTML += `<p>${currentPlayer.name} attempts to steal, but ${targetPlayer.name} has no biscuits to take!</p>`;
+                outputEl.scrollTop = outputEl.scrollHeight;
+                updateStatus();
+            }
+            endTurn();
+        };
+
+        function initializeGame() {
+            startBtn.style.display = 'block';
+            rulesBtn.style.display = 'block';
+            controlsDiv.style.display = 'none';
+            statusEl.style.display = 'block';
+            disableButtons();
+            player1 = { name: 'You', stash: 0, score: 0 };
+            player2 = { name: 'Computer', stash: 0, score: 0 };
+            currentPlayer = player1;
+            round = 0;
+            biscuitsOnTable = 0;
+            outputEl.innerHTML = `<p>Welcome to The Biscuit Deal! Bluff, steal, and bank your way to victory.</p><p>First player to ${WINNING_SCORE} points wins!</p>`;
+            updateStatus();
+            outputEl.scrollTop = outputEl.scrollHeight;
+        }
+
+        rulesBtn.onclick = () => {
+            rulesBox.classList.add('visible');
+            disableButtons();
+            startBtn.disabled = true;
+        };
+
+        closeRulesBtn.onclick = () => {
+            rulesBox.classList.remove('visible');
+            enableButtons();
+            startBtn.disabled = false;
+        };
+
+        startBtn.onclick = () => {
+            startBtn.style.display = 'none';
+            rulesBtn.style.display = 'block';
+            controlsDiv.style.display = 'block';
+            statusEl.style.display = 'block';
+            outputEl.innerHTML = `<p>Game started! Let the biscuit dealing begin!</p>`;
+            outputEl.scrollTop = outputEl.scrollHeight;
+            startNewRound();
+        };
+
+        initializeGame();
+    </script>
+</body>
+</html>
